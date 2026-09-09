@@ -12,28 +12,40 @@ import mx.tec.sabores.domain.Restaurant
 import mx.tec.sabores.domain.Review
 import mx.tec.sabores.domain.ReviewValidator
 import mx.tec.sabores.domain.RestaurantEnLista
+import okio.IOException
+import retrofit2.HttpException
+
+//b3 issue with references solved with ai
 
 data class MyReviewItem(val restaurantName: String, val review: Review)
 
-class SaboresViewModel : ViewModel() {
+class SaboresViewModel(
+    private val repository: RestaurantRepository = RestaurantRepository()
+) : ViewModel() {
 
-    private val repository = RestaurantRepository()
-
-    var restaurantesConResumen by mutableStateOf<List<RestaurantEnLista>>(emptyList())
+    var restaurantes by mutableStateOf<UiState<List<RestaurantEnLista>>>(UiState.Cargando)
         private set
-
-    val restaurants: List<Restaurant>
-        get() = restaurantesConResumen.map { it.restaurant }
 
     var reviews by mutableStateOf<List<Review>>(emptyList())
         private set
 
-    init {
+    init { cargarRestaurantes() }
+
+    fun cargarRestaurantes() {
         viewModelScope.launch {
-            restaurantesConResumen = repository.getAllForList()
+            restaurantes = UiState.Cargando
+            restaurantes = try {
+                UiState.Exito(repository.getAllForList())
+            } catch (e: IOException) {
+                UiState.Error("No hay conexión. Revisa tu internet.")
+            } catch (e: HttpException) {
+                UiState.Error("El servidor respondió ${e.code()}.")
+            }
         }
     }
 
+    private val restaurantesActuales: List<RestaurantEnLista>
+        get() = (restaurantes as? UiState.Exito)?.datos ?: emptyList()
 
     val myReviews: List<MyReviewItem>
         get() = reviews.reversed().mapNotNull { review ->
@@ -41,13 +53,13 @@ class SaboresViewModel : ViewModel() {
         }
 
     fun restaurantById(id: Int): Restaurant? =
-        restaurants.firstOrNull { it.id == id }
+        restaurantesActuales.firstOrNull { it.restaurant.id == id }?.restaurant
 
     fun reviewsOf(restaurantId: Int): List<Review> =
         reviews.filter { it.restaurantId == restaurantId }
 
     fun summaryOf(restaurantId: Int): RatingSummary =
-        restaurantesConResumen.firstOrNull { it.restaurant.id == restaurantId }?.summary
+        restaurantesActuales.firstOrNull { it.restaurant.id == restaurantId }?.summary
             ?: RatingSummary(0.0, 0)
 
     fun addReview(restaurantId: Int, stars: Int, comment: String) {
