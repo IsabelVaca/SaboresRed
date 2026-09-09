@@ -37,12 +37,14 @@ fun RestaurantListScreen(
     }
 }
 
+//corregido con ia (error por la llamada getAll())
 @Preview(showBackground = true)
 @Composable
 private fun ListPreview() {
     SaboresTheme {
         RestaurantListScreen(
-            restaurants = RestaurantRepository().getAll(),
+
+            restaurants = emptyList(),
             summaryOf = { RatingSummary(4.2, 3) },
             onRestaurantClick = {}
         )
