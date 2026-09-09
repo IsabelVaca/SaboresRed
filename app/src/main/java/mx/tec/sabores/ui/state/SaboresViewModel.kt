@@ -38,8 +38,16 @@ class SaboresViewModel : ViewModel() {
 
     // --- eventos que llegan desde la UI ---
 
+    //issue solved with help of ai
     fun addReview(restaurantId: Int, stars: Int, comment: String) {
         if (!ReviewValidator.isValid(stars, comment)) return
-        reviews = reviews + Review(restaurantId, stars, comment.trim())
+        val newReview = Review(
+            id = reviews.size + 1,
+            restaurantId = restaurantId,
+            author = "Usuario",
+            stars = stars,
+            comment = comment.trim()
+        )
+        reviews = reviews + newReview
     }
 }
