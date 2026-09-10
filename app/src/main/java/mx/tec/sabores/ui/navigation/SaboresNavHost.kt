@@ -22,6 +22,7 @@ import mx.tec.sabores.ui.screens.RestaurantDetailScreen
 import mx.tec.sabores.ui.screens.RestaurantListScreen
 import mx.tec.sabores.ui.state.NewReviewViewModel
 import mx.tec.sabores.ui.state.SaboresViewModel
+import androidx.compose.runtime.LaunchedEffect
 
 @Composable
 fun SaboresApp() {
@@ -62,13 +63,13 @@ fun SaboresApp() {
 
             composable(Route.HOME) {
                 RestaurantListScreen(
-                    viewModel = viewModel,
+                    restaurants = viewModel.restaurantes,
                     onRestaurantClick = { id -> nav.navigate(Route.detail(id)) }
                 )
             }
 
             composable(Route.MY_REVIEWS) {
-                MyReviewsScreen(items = viewModel.myReviews)
+                MyReviewsScreen(items = viewModel.mias)
             }
 
             composable(
@@ -76,12 +77,14 @@ fun SaboresApp() {
                 arguments = listOf(navArgument(Route.ARG_RESTAURANT_ID) { type = NavType.IntType })
             ) { entry ->
                 val id = entry.arguments?.getInt(Route.ARG_RESTAURANT_ID) ?: return@composable
-                 val restaurant = viewModel.restaurantById(id) ?: return@composable
+
+                LaunchedEffect(id) { viewModel.cargarDetalle(id) }
+                val detalle = viewModel.detalle ?: return@composable
 
                 RestaurantDetailScreen(
-                    restaurant = restaurant,
-                    summary = viewModel.summaryOf(id),
-                    reviews = viewModel.reviewsOf(id),
+                    restaurant = detalle.restaurant,
+                    summary = detalle.summary,
+                    reviews = detalle.reviews,
                     onWriteReviewClick = { nav.navigate(Route.newReview(id)) },
                     onBack = { nav.popBackStack() }
                 )
@@ -89,29 +92,29 @@ fun SaboresApp() {
 
             composable(
                 route = Route.NEW_REVIEW,
-                arguments = listOf(navArgument(Route.ARG_RESTAURANT_ID) { type = NavType.IntType })
+                arguments = listOf(navArgument(Route.ARG_RESTAURANT_ID) {
+                    type = NavType.IntType })
             ) { entry ->
-                val id = entry.arguments?.getInt(Route.ARG_RESTAURANT_ID) ?: return@composable
-                val restaurant = viewModel.restaurantById(id) ?: return@composable
+                val id = entry.arguments?.getInt(Route.ARG_RESTAURANT_ID)
+                    ?: return@composable
+                val restaurant = viewModel.detalle?.restaurant ?: return@composable
 
-                val formViewModel: NewReviewViewModel = viewModel()
+                    val formViewModel: NewReviewViewModel = viewModel()
 
-                NewReviewScreen(
-                    restaurant = restaurant,
-                    uiState = formViewModel.uiState,
-                    onStarsChange = formViewModel::onStarsChange,
-                    onCommentChange = formViewModel::onCommentChange,
-                    onSave = {
-                        viewModel.addReview(
-                            restaurantId = id,
-                            stars = formViewModel.uiState.stars,
-                            comment = formViewModel.uiState.comment
-                        )
-                        nav.popBackStack()
-                    },
-                    onCancel = { nav.popBackStack() }
-                )
+                    NewReviewScreen(
+                        restaurant = restaurant,
+                        uiState = formViewModel.uiState,
+                        onStarsChange = formViewModel::onStarsChange,
+                        onCommentChange = formViewModel::onCommentChange,
+                        onSave = {
+
+                            //nav.popBackStack()
+                            formViewModel.publicar(id) { nav.popBackStack() }
+                        },
+                        onCancel = { nav.popBackStack() }
+                    )
+                }
             }
         }
     }
-}
+

@@ -15,33 +15,26 @@ import mx.tec.sabores.ui.components.ErrorView
 import mx.tec.sabores.ui.components.RestaurantCard
 import mx.tec.sabores.ui.state.SaboresViewModel
 import mx.tec.sabores.ui.state.UiState
+import mx.tec.sabores.domain.RestaurantEnLista
+
 
 @Composable
 fun RestaurantListScreen(
-    viewModel: SaboresViewModel,
+    restaurants: List<RestaurantEnLista>,
     onRestaurantClick: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    when (val estado = viewModel.restaurantes) {
-        is UiState.Cargando -> Box(modifier.fillMaxSize(), Alignment.Center) {
-            CircularProgressIndicator()
-        }
-        is UiState.Error -> ErrorView(
-            mensaje = estado.mensaje,
-            onReintentar = { viewModel.cargarRestaurantes() }
-        )
-        is UiState.Exito -> LazyColumn(
-            modifier = modifier.fillMaxSize(),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            items(estado.datos, key = { it.restaurant.id }) { item ->
-                RestaurantCard(
-                    restaurant = item.restaurant,
-                    summary = item.summary,
-                    onClick = { onRestaurantClick(item.restaurant.id) }
-                )
-            }
+    LazyColumn(
+        modifier = modifier.fillMaxSize(),
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        items(restaurants, key = { it.restaurant.id }) { item ->
+            RestaurantCard(
+                restaurant = item.restaurant,
+                summary = item.summary,
+                onClick = { onRestaurantClick(item.restaurant.id) }
+            )
         }
     }
 }
