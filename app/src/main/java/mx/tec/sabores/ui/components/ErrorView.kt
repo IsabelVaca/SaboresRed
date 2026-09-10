@@ -23,3 +23,10 @@ fun ErrorView(mensaje: String, onReintentar: () -> Unit, modifier: Modifier = Mo
         }
     }
 }
+
+@Composable
+fun CargandoView(modifier: Modifier = Modifier) {
+    Box(modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        androidx.compose.material3.CircularProgressIndicator()
+    }
+}
