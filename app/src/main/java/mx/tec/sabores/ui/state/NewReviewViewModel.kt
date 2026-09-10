@@ -23,7 +23,7 @@ data class NewReviewUiState(
         if (comment.isEmpty()) null else ReviewValidator.validateComment(comment)
 
     // Con la red de por medio, "puedo guardar" incluye "no estoy guardando ya".
-    val canSave: Boolean = /* ReviewValidator.isValid(stars, comment) && */!guardando
+    val canSave: Boolean =  ReviewValidator.isValid(stars, comment) && !guardando
 
     val charactersLeft: Int = ReviewValidator.COMMENT_MAX - comment.trim().length
 }
