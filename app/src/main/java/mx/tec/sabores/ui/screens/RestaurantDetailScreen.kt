@@ -30,6 +30,9 @@ import mx.tec.sabores.domain.Restaurant
 import mx.tec.sabores.domain.Review
 import mx.tec.sabores.ui.components.RatingLabel
 import mx.tec.sabores.ui.components.StarsRow
+import androidx.compose.foundation.layout.Row
+import androidx.compose.material3.OutlinedButton
+import mx.tec.sabores.data.remote.Network
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -39,6 +42,7 @@ fun RestaurantDetailScreen(
     reviews: List<Review>,
     onWriteReviewClick: () -> Unit,
     onBack: () -> Unit,
+    onBorrar: (id: Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -98,6 +102,14 @@ fun RestaurantDetailScreen(
                             StarsRow(review.stars)
                             Spacer(Modifier.height(6.dp))
                             Text(review.comment, style = MaterialTheme.typography.bodyMedium)
+                            if (review.author == Network.alumno) {
+                                Spacer(Modifier.height(8.dp))
+                                Row {
+                                    OutlinedButton(onClick = { onBorrar(review.id) }) {
+                                        Text("Borrar")
+                                    }
+                                }
+                            }
                         }
                     }
                 }

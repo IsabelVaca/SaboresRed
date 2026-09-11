@@ -79,7 +79,12 @@ fun SaboresApp() {
             }
 
             composable(Route.MY_REVIEWS) {
-                MyReviewsScreen(items = viewModel.mias)
+                LaunchedEffect(Unit) { viewModel.cargarMisResenas() }
+                MyReviewsScreen(
+                    items = viewModel.mias,
+                    onEditar = { id, stars, comment -> viewModel.editarResena(id, stars, comment) },
+                    onBorrar = { id -> viewModel.borrarResena(id) }
+                )
             }
 
 
@@ -101,7 +106,8 @@ fun SaboresApp() {
                         summary = estado.datos.summary,
                         reviews = estado.datos.reviews,
                         onWriteReviewClick = { nav.navigate(Route.newReview(id)) },
-                        onBack = { nav.popBackStack() }
+                        onBack = { nav.popBackStack() },
+                        onBorrar = { reviewId -> viewModel.borrarResena(reviewId) { viewModel.cargarDetalle(id) } }
                     )
                 }
             }

@@ -54,6 +54,52 @@ class SaboresViewModel(
         }
     }
 
+    fun cargarMisResenas() {
+        viewModelScope.launch {
+            val nombres = (restaurantes as? UiState.Exito)?.datos
+                ?.associate { it.restaurant.id to it.restaurant.name }
+                ?: emptyMap()
+
+            mias = repository.getMyReviews().map { review ->
+                MyReviewItem(
+                    restaurantName = nombres[review.restaurantId] ?: "Restaurante",
+                    review = review
+                )
+            }
+        }
+    }
+
+
+    fun borrarResena(id: Int, alTerminar: () -> Unit = {}) {
+        viewModelScope.launch {
+            try {
+                val borrada = repository.deleteReview(id)
+                if (borrada) {
+                    mias = mias.filterNot { it.review.id == id }
+                    alTerminar()
+                }
+            } catch (e: IOException) {
+
+            } catch (e: HttpException) {
+
+            }
+        }
+    }
+
+
+    fun editarResena(id: Int, stars: Int, comment: String) {
+        viewModelScope.launch {
+            try {
+                repository.editReview(id, stars, comment)
+                cargarMisResenas()
+            } catch (e: IOException) {
+                // por ahora lo dejamos así
+            } catch (e: HttpException) {
+                // igual
+            }
+        }
+    }
+
     private suspend fun <T> pedir(block: suspend () -> T): UiState<T> = try {
         UiState.Exito(block())
     } catch (e: IOException) {

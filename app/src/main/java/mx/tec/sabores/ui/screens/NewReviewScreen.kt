@@ -25,6 +25,7 @@ import mx.tec.sabores.domain.ReviewValidator
 import mx.tec.sabores.ui.components.StarPicker
 import mx.tec.sabores.ui.state.NewReviewUiState
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NewReviewScreen(
